@@ -42,4 +42,3 @@ scala> df1.show()
 scala> df1.write.mode("append").insertInto("default.hbase_hive_table")
 21/04/24 20:35:18 WARN scheduler.TaskSetManager: Lost task 0.0 in stage 1.0 (TID 1, c1666-node4.coelab.cloudera.com, executor 1): java.lang.IllegalArgumentException: Must specify table name
 
-Squadron cluster on which issue was replicated: https://squadron.int.support.cloudera.com/clusters/view_cluster?id=54D2C29286D93C15EE9F47A612319AEF
