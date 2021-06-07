@@ -1,0 +1,45 @@
+In hive:
+==========
+CREATE EXTERNAL TABLE hbase_hive_table (key int, value string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf1:val")
+TBLPROPERTIES ("hbase.table.name" = "hbase_hive_table", "hbase.mapred.output.outputtable" = "hbase_hive_table");
+
+
+CREATE TABLE testhbasehive (key int, value string) row format delimited fields terminated by '\t' stored as textfile;
+
+load data inpath '/tmp/test.txt' into table testhbasehive;
+
+insert overwrite table hbase_hive_table select * from testhbasehive;
+
+In Spark:
+===========
+spark-shell --verbose --master yarn --deploy-mode client --driver-class-path /opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-server.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar:/opt/cloudera/parcels/CDH/lib/hbase/guava-12.0.1.jar:/opt/cloudera/parcels/CDH/lib/hive/lib/htrace-core.jar --jars /opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar,/opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar,/opt/cloudera/parcels/CDH/lib/hbase/hbase-server.jar,/opt/cloudera/parcels/CDH/lib/hive/lib/guava-28.1-jre.jar,/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar,/opt/cloudera/parcels/CDH/lib/hive/lib/htrace-core.jar,/opt/cloudera/parcels/CDH/lib/hive/lib/hive-hbase-handler.jar --files /etc/hbase/conf/hbase-site.xml
+
+
+import org.apache.spark.sql.hive.HiveContext
+val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
+val df1 = sqlContext.sql("select  * from default.hbase_hive_table")
+df1.write.mode("append").insertInto("default.hbase_hive_table")
+
+
+Error with spark:
+=================
+scala> val df1 = sqlContext.sql("select * from default.hbase_hive_table")
+df1: org.apache.spark.sql.DataFrame = [key: int, value: string]
+
+scala> df1.show()
++---+------+                                                                    
+|key| value|
++---+------+
+|  1|grapes|
+|  2| apple|
+|  3| mango|
+|  4|orange|
++---+------+
+
+
+scala> df1.write.mode("append").insertInto("default.hbase_hive_table")
+21/04/24 20:35:18 WARN scheduler.TaskSetManager: Lost task 0.0 in stage 1.0 (TID 1, c1666-node4.coelab.cloudera.com, executor 1): java.lang.IllegalArgumentException: Must specify table name
+
+Squadron cluster on which issue was replicated: https://squadron.int.support.cloudera.com/clusters/view_cluster?id=54D2C29286D93C15EE9F47A612319AEF
