@@ -2,7 +2,7 @@ import boto3
 
 client = boto3.client('emr', region_name='us-east-1')
 
-response = client.list_clusters()
+response = client.list_clusters(ClusterStates=['WAITING'])
 
 cluster_id = response['Clusters'][0]['Id']
 
