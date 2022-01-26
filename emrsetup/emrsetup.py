@@ -28,6 +28,24 @@ response = client.run_job_flow(
         'TerminationProtected': False,
         'Ec2KeyName': 'ec2-key-pair'
     },
+     Steps=[
+    {
+        'Name': 'Setup Debugging',
+        'ActionOnFailure': 'TERMINATE_CLUSTER',
+        'HadoopJarStep': {
+            'Jar': 'command-runner.jar',
+            'Args': ['stat-script']
+        }
+    },
+    {
+        'Name': 'Run Spark',
+        'ActionOnFailure': 'CANCEL_AND_WAIT',
+        'HadoopJarStep': {
+            'Jar': 'command-runner.jar',
+            'Args': ['spark-submit', 's3://varunetlproject/studentAnalysis.py']
+        }
+    }
+    ],
     VisibleToAllUsers=True,
     ServiceRole='EMR_DefaultRole',
     JobFlowRole='EMR_EC2_DefaultRole',
