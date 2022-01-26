@@ -32,7 +32,7 @@ rdd4 = rdd3.map(lambda x: (x[3],1))
 rdd5 = rdd4.reduceByKey(lambda x,y : x + y)
 print("Total number of enrolments per course.")
 results = rdd5.collect()
-rdd5.saveAsTextFile("s3://varunetlproject/")
+rdd5.saveAsTextFile("s3://varunetlproject/output")
 
 
 
